@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio 3D - V1.3 Fusion Finale</title>
+    
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+</head>
+<body>
+
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;">
+        <defs>
+            <filter id="liquid-distortion" x="-50%" y="-50%" width="200%" height="200%">
+                <feTurbulence id="turbulence-noise" type="turbulence" baseFrequency="0.02" numOctaves="3" seed="5" result="noise" />
+            
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="30" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <nav>
+        <div class="logo" onclick="scrollToSection('#home')">PORTFOLIO.</div>
+        <div class="nav-links">
+            <a onclick="scrollToSection('#home')">Accueil</a>
+            <a onclick="scrollToSection('#projects')">Work</a>
+            <a onclick="scrollToSection('#about')">About</a>
+            <a onclick="scrollToSection('#contact')">Contact</a>
+        </div>
+    </nav>
+
+    <div id="music-player-container">
+        
+        <div id="music-btn-minimized" onclick="togglePlayer(true)">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" fill="white"/></svg>
+        </div>
+
+        <div id="music-player-expanded" class="glass-player">
+            <div class="track-info">
+                <span id="track-name">Select Track</span>
+            </div>
+            
+            <div class="player-controls">
+                <button class="ctrl-btn" onclick="prevTrack()">⏮</button>
+                <button class="ctrl-btn main-play" onclick="togglePlay()">▶</button>
+                <button class="ctrl-btn" onclick="nextTrack()">⏭</button>
+            </div>
+
+            <div class="volume-container">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                <input type="range" id="volume-slider" min="0" max="1" step="any" value="0.1" oninput="setVolume(this.value)">
+            </div>
+        </div>
+    </div>
+
+    <div id="webgl-container"></div>
+
+    <div id="floating-contact" onclick="scrollToSection('#contact')">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+    </div>
+
+    <div id="lightbox" onclick="closeLightbox()">
+        <div id="close-btn">&times;</div>
+        <div id="lightbox-content"></div>
+        <div id="lightbox-caption"></div>
+    </div>
+
+    <main>
+        <section id="home">
+            <div class="hero-content">
+                <h1>Creative<br>3D Artist</h1>
+                <p class="tagline">Exploration visuelle, animation et direction artistique.</p>
+            </div>
+            <a onclick="scrollToSection('#projects')" class="cta-btn hero-btn">
+                <span>Découvrir mes projets</span>
+                <div class="arrow">↓</div>
+            </a>
+        </section>
+
+        <section id="projects">
+            <div class="header-projects">
+                <h2>Travaux</h2>
+                <div class="filter-container">
+                    <button class="filter-btn active" onclick="filterProjects('all', this)">Tout</button>
+                    <button class="filter-btn" onclick="filterProjects('render', this)">Rendus</button>
+                    <button class="filter-btn" onclick="filterProjects('anim', this)">Animation</button>
+                </div>
+            </div>
+            <div class="bento-grid">
+                 <div class="project-card" 
+                    data-category="render" 
+                    data-type="image" 
+                    data-src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600"
+                    data-softs="Blender, Photoshop" 
+                    data-date="Octobre 2023" 
+                    onclick="openLightbox(this)">
+    
+                    <div class="media-icon">IMG</div>
+    
+                    <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600" class="card-media" alt="Aperçu projet">
+    
+                    <div class="card-overlay">
+                        <h3>Abstract Oil</h3>
+                        <p>Cycles / Texture</p>
+                    </div>
+                </div>
+                <div class="project-card" 
+                    data-category="anim" 
+                    data-type="video" 
+                    data-src="https://cdn.pixabay.com/video/2023/10/22/186115-877653483_large.mp4"
+                    data-softs="Blender, After Effects" 
+                    data-date="Novembre 2023" 
+                    onclick="openLightbox(this)">
+    
+                    <div class="media-icon">PLAY</div>
+                    
+                    <video class="card-media" autoplay muted loop playsinline>
+                        <source src="https://cdn.pixabay.com/video/2023/10/22/186115-877653483_large.mp4" type="video/mp4">
+                    </video>
+                    
+                    <div class="card-overlay">
+                        <h3>Cyber Tunnel</h3>
+                        <p>Animation Loop</p>
+                    </div>
+                </div>
+                <div class="project-card" data-category="render" data-type="image" data-src="https://images.unsplash.com/photo-1633596683562-4a4697de837a?q=80&w=1920" onclick="openLightbox(this)">
+                    <div class="media-icon">IMG</div>
+                    <img src="https://images.unsplash.com/photo-1633596683562-4a4697de837a?q=80&w=600" class="card-media">
+                    <div class="card-overlay">
+                        <h3>Glass Shader</h3>
+                        <p>Octane Render</p>
+                    </div>
+                </div>
+                <div class="project-card" data-category="render" data-type="image" data-src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1920" onclick="openLightbox(this)">
+                    <div class="media-icon">IMG</div>
+                    <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600" class="card-media">
+                    <div class="card-overlay">
+                        <h3>Neon City</h3>
+                        <p>Unreal Engine 5</p>
+                    </div>
+                </div>
+            </div>
+            <a onclick="scrollToSection('#about')" class="cta-btn project-btn">
+                <span>À propos de moi</span>
+                <div class="arrow">↓</div>
+            </a>
+        </section>
+
+        <section id="about">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800" class="profile-pic">
+            <div class="about-text">
+                <p>Salut, moi c'est [Ton Prénom]. Passionné par la 3D et le rendu temps réel. J'aime créer des univers immersifs et raconter des histoires à travers la lumière et le mouvement.</p>
+            </div>
+            <div class="software-grid">
+                <div class="soft-item"><img src="https://cdn-icons-png.flaticon.com/512/2809/2809590.png" class="soft-icon"><span class="soft-name">Source Filmmaker</span></div>
+                <div class="soft-item"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Cinema_4D_Logo.png" class="soft-icon"><span class="soft-name">Cinema 4D</span></div>
+                <div class="soft-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Blender_logo_no_text.svg/2503px-Blender_logo_no_text.svg.png" class="soft-icon"><span class="soft-name">Blender</span></div>
+                <div class="soft-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Autodesk_Maya_Logo_2023.svg/1024px-Autodesk_Maya_Logo_2023.svg.png" class="soft-icon"><span class="soft-name">Maya</span></div>
+                 <div class="soft-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Adobe_Substance_3D_Painter_logo.svg/1200px-Adobe_Substance_3D_Painter_logo.svg.png" class="soft-icon"><span class="soft-name">Substance</span></div>
+            </div>
+            <a onclick="scrollToSection('#contact')" class="cta-btn about-btn">
+                <span>Me contacter</span>
+                <div class="arrow">↓</div>
+            </a>
+        </section>
+
+        <section id="contact">
+            <div class="liquid-wrapper" id="tilt-card">
+                <div class="distortion-layer"></div>
+                <div class="glass-body-layer"></div>
+                <div class="liquid-content">
+                    <h2>Let's Create</h2>
+                    <p>Un projet en tête ? Une collaboration ?</p>
+                    <a href="mailto:contact@portfolio.com" class="email-link">hello@portfolio.com</a>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Instagram</a>
+                        <a href="#" class="social-link">Artstation</a>
+                        <a href="#" class="social-link">LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

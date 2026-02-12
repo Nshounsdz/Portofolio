@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio 3D - V1.3 Projects Fixed</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+
+    <style>
+        /* --- RESET --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #050505; color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif; overflow-x: hidden; }
+
+        /* --- FOND AURORE --- */
+        #galaxy-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg, #050505 0%, #0a0a1a 25%, #1a0a2e 50%, #0a0a1a 75%, #050505 100%);
+            background-size: 400% 400%;
+            animation: aurora-move 20s ease infinite alternate;
+        }
+        @keyframes aurora-move {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        #webgl-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+
+        /* --- NAVIGATION --- */
+        nav { position: fixed; top: 0; width: 100%; padding: 30px 5vw; display: flex; justify-content: space-between; align-items: center; z-index: 100; mix-blend-mode: exclusion; }
+        .logo { font-weight: 900; font-size: 1.5rem; letter-spacing: -1px; cursor: pointer;}
+        .nav-links a { color: #fff; text-decoration: none; margin-left: 30px; font-weight: 500; font-size: 0.9rem; text-transform: uppercase; cursor: pointer; position: relative; }
+        .nav-links a::after { content: ''; position: absolute; width: 0; height: 1px; bottom: -5px; left: 0; background-color: #fff; transition: width 0.3s; }
+        .nav-links a:hover::after { width: 100%; }
+
+        /* --- SECTIONS --- */
+        section { min-height: 100vh; width: 100%; padding: 120px 5vw; position: relative; display: flex; flex-direction: column; justify-content: center; }
+        h1 { font-size: 8vw; line-height: 0.9; font-weight: 900; margin-bottom: 30px; letter-spacing: -3px; text-transform: uppercase; }
+        .tagline { font-size: 1.5rem; color: #ccc; max-width: 500px; border-left: 2px solid white; padding-left: 20px; }
+
+        /* --- BOUTONS CTA (LIQUID GLASS) --- */
+        .cta-btn {
+            position: relative; display: inline-flex; align-items: center; justify-content: center;
+            background: transparent; border: none; padding: 20px 50px;
+            color: #fff; text-decoration: none; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 2px; font-weight: 600;
+            cursor: pointer; z-index: 10; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .cta-btn::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50px; z-index: -1;
+            background: rgba(255, 255, 255, 0.01);
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.05), 0 10px 20px rgba(0,0,0,0.5);
+            backdrop-filter: url('#liquid-distortion'); -webkit-backdrop-filter: url('#liquid-distortion');
+            transition: box-shadow 0.3s ease;
+        }
+        .cta-btn:hover { transform: scale(1.1); }
+        .cta-btn:hover::before { box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.1), 0 15px 30px rgba(0,0,0,0.7); }
+        .cta-btn .arrow { font-size: 1.2rem; margin-left: 10px; transition: transform 0.3s; }
+        .cta-btn:hover .arrow { transform: translateY(3px); }
+
+        .hero-btn { position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); }
+        .project-btn, .about-btn { margin-top: 60px; align-self: center; }
+
+        /* --- FLOATING BTN --- */
+        #floating-contact {
+            position: fixed; bottom: 40px; right: 40px; width: 70px; height: 70px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            z-index: 90; opacity: 0; transform: translateY(20px) scale(1); transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.01); border-radius: 50%;
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.4), 0 10px 20px rgba(0,0,0,0.5);
+            backdrop-filter: url('#liquid-distortion'); -webkit-backdrop-filter: url('#liquid-distortion');
+        }
+        #floating-contact svg { width: 24px; height: 24px; fill: white; z-index: 2; transition: fill 0.3s; }
+        #floating-contact:hover { transform: scale(1.15) translateY(0) !important; box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.8); }
+        #floating-contact:hover svg { fill: #fff; filter: drop-shadow(0 0 5px white); }
+
+        /* --- SECTION PROJETS (Réparée) --- */
+        .header-projects { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        h2 { font-size: 4vw; text-transform: uppercase; }
+        
+        /* Boutons de filtres (Style Liquid Glass appliqué) */
+        .filter-container { display: flex; gap: 15px; }
+        .filter-btn { 
+            position: relative;
+            background: transparent; border: none; 
+            padding: 12px 30px; 
+            color: #888; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;
+            cursor: pointer; z-index: 10; transition: color 0.3s;
+        }
+        /* Capsule de verre pour le filtre */
+        .filter-btn::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 30px; z-index: -1;
+            background: rgba(255, 255, 255, 0.01);
+            /* Verre sombre par défaut */
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 5px 10px rgba(0,0,0,0.3);
+            backdrop-filter: url('#liquid-distortion'); -webkit-backdrop-filter: url('#liquid-distortion');
+            transition: all 0.3s ease;
+            opacity: 0.5;
+        }
+        
+        .filter-btn:hover { color: #fff; }
+        .filter-btn:hover::before { opacity: 1; box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3); }
+
+        /* État Actif */
+        .filter-btn.active { color: #fff; }
+        .filter-btn.active::before { 
+            opacity: 1; 
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 5px 15px rgba(0,0,0,0.5); /* Lumière allumée */
+        }
+
+        /* Grille Bento réparée */
+        .bento-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 1.5vw; 
+            width: 100%;
+        }
+        @media (max-width: 1000px) { .bento-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .bento-grid { grid-template-columns: 1fr; } }
+
+        .project-card { 
+            position: relative; aspect-ratio: 16/9; overflow: hidden; 
+            background: #111; border: 1px solid #333; cursor: pointer; 
+            border-radius: 10px; /* Légèrement arrondi */
+        }
+        .card-media { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; opacity: 0.7; }
+        .project-card:hover .card-media { transform: scale(1.05); opacity: 1; }
+        .card-overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(to top, rgba(0,0,0,1), transparent); opacity: 0; transition: 0.3s; }
+        .project-card:hover .card-overlay { opacity: 1; }
+        .media-icon { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); padding: 8px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+
+        /* --- ABOUT --- */
+        #about { align-items: center; text-align: center; }
+        .profile-pic { width: 300px; height: 300px; border-radius: 40px; object-fit: cover; border: 3px solid #333; margin-bottom: 40px; box-shadow: 0 0 40px rgba(255,255,255,0.15); }
+        .about-text { max-width: 800px; font-size: 1.5rem; color: #ccc; margin-bottom: 60px; }
+        .software-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 50px; }
+        .soft-item { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .soft-icon { width: 90px; height: 90px; object-fit: contain; filter: grayscale(100%) brightness(1.5); transition: 0.3s; }
+        .soft-item:hover .soft-icon { filter: grayscale(0%) brightness(1); transform: scale(1.1); }
+        .soft-name { font-size: 0.8rem; color: #888; letter-spacing: 1px; text-transform: uppercase;}
+
+        /* --- CONTACT --- */
+        #contact { display: flex; justify-content: center; align-items: center; perspective: 1000px; }
+        .liquid-wrapper {
+            position: relative; width: 90%; max-width: 850px; min-height: 500px;
+            display: flex; justify-content: center; align-items: center;
+            border-radius: 40px; transform: scale(1.05); transition: 0.3s;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+        .distortion-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; border-radius: 40px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: url('#liquid-distortion'); -webkit-backdrop-filter: url('#liquid-distortion');
+            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, rgba(0,0,0,0.8) 100%);
+        }
+        .glass-body-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; border-radius: 40px; pointer-events: none;
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.05), inset -10px -10px 40px rgba(0, 0, 0, 0.5);
+        }
+        .liquid-content { position: relative; z-index: 3; text-align: center; padding: 60px 40px; }
+        .liquid-content h2 { font-size: 5rem; margin-bottom: 20px; font-weight: 800; background: linear-gradient(to bottom, #fff, #bbb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
+        .liquid-content p { font-size: 1.5rem; color: #fff; margin-bottom: 50px; font-weight: 500; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .email-link { display: inline-block; font-size: 3rem; color: #fff; text-decoration: none; border-bottom: 3px solid rgba(255,255,255,0.3); margin: 40px 0; transition: 0.3s; }
+        .email-link:hover { color: #00eaff; border-color: #00eaff; text-shadow: 0 0 20px #00eaff; }
+        .social-links { display: flex; justify-content: center; gap: 50px; }
+        .social-link { color: #fff; text-decoration: none; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 3px; font-weight: bold; opacity: 0.9; transition: 0.3s; }
+        .social-link:hover { opacity: 1; letter-spacing: 5px; text-shadow: 0 0 10px white; }
+
+        /* LIGHTBOX */
+        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; opacity: 0; }
+        #lightbox-content { width: 80vw; height: 80vh; display: flex; justify-content: center; align-items: center; }
+        #lightbox-content img, #lightbox-content video { max-width: 100%; max-height: 100%; display: block; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        #close-btn { position: absolute; top: 30px; right: 30px; color: #fff; font-size: 2rem; cursor: pointer; z-index: 1001; }
+        #lightbox-caption { margin-top: 20px; color: #aaa; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <div id="galaxy-bg"></div>
+
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;">
+        <defs>
+            <filter id="liquid-distortion" x="-50%" y="-50%" width="200%" height="200%">
+                <feTurbulence id="turbulence-noise" type="fractalNoise" baseFrequency="0.001" numOctaves="2" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="150" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <nav>
+        <div class="logo" onclick="scrollToSection('#home')">PORTFOLIO.</div>
+        <div class="nav-links">
+            <a onclick="scrollToSection('#home')">Accueil</a>
+            <a onclick="scrollToSection('#projects')">Work</a>
+            <a onclick="scrollToSection('#about')">About</a>
+            <a onclick="scrollToSection('#contact')">Contact</a>
+        </div>
+    </nav>
+
+    <div id="webgl-container"></div>
+
+    <div id="floating-contact" onclick="scrollToSection('#contact')">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+    </div>
+
+    <div id="lightbox" onclick="closeLightbox()">
+        <div id="close-btn">&times;</div>
+        <div id="lightbox-content"></div>
+        <div id="lightbox-caption"></div>
+    </div>
+
+    <main>
+        <section id="home">
+            <div class="hero-content">
+                <h1>Creative<br>3D Artist</h1>
+                <p class="tagline">Exploration visuelle, animation et direction artistique.</p>
+            </div>
+            <a onclick="scrollToSection('#projects')" class="cta-btn hero-btn"><span>Découvrir</span><div class="arrow">↓</div></a>
+        </section>
+
+        <section id="projects">
+            <div class="header-projects">
+                <h2>Travaux</h2>
+                <div class="filter-container">
+                    <button class="filter-btn active" onclick="filterProjects('all', this)">Tout</button>
+                    <button class="filter-btn" onclick="filterProjects('render', this)">Rendus</button>
+                    <button class="filter-btn" onclick="filterProjects('anim', this)">Animation</button>
+                </div>
+            </div>
+            <div class="bento-grid">
+                 <div class="project-card" data-category="render" data-type="image" data-src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920" onclick="openLightbox(this)">
+                    <div class="media-icon">IMG</div>
+                    <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600" class="card-media">
+                    <div class="card-overlay"><h3>Abstract Oil</h3><p>Cycles / Texture</p></div>
+                </div>
+                <div class="project-card" data-category="anim" data-type="video" data-src="https://cdn.pixabay.com/video/2023/10/22/186115-877653483_large.mp4" onclick="openLightbox(this)">
+                    <div class="media-icon">PLAY</div>
+                    <video class="card-media" autoplay muted loop playsinline><source src="https://cdn.pixabay.com/video/2023/10/22/186115-877653483_large.mp4" type="video/mp4"></video>
+                    <div class="card-overlay"><h3>Cyber Tunnel</h3><p>Blender / Eevee</p></div>
+                </div>
+                <div class="project-card" data-category="render" data-type="image" data-src="https://images.unsplash.com/photo-1633596683562-4a4697de837a?q=80&w=1920" onclick="openLightbox(this)">
+                    <div class="media-icon">IMG</div>
+                    <img src="https://images.unsplash.com/photo-1633596683562-4a4697de837a?q=80&w=600" class="card-media">
+                    <div class="card-overlay"><h3>Glass Shader</h3><p>Octane Render</p></div>
+                </div>
+                <div class="project-card" data-category="render" data-type="image" data-src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1920" onclick="openLightbox(this)">
+                    <div class="media-icon">IMG</div>
+                    <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=600" class="card-media">
+                    <div class="card-overlay"><h3>Neon City</h3><p>Unreal Engine 5</p></div>
+                </div>
+            </div>
+            <a onclick="scrollToSection('#about')" class="cta-btn project-btn">
+                <span>À propos de moi</span>
+                <div class="arrow">↓</div>
+            </a>
+        </section>
+
+        <section id="about">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800" class="profile-pic">
+            <div class="about-text">
+                <p>Salut, moi c'est [Ton Prénom]. Passionné par la 3D et le rendu temps réel. J'aime créer des univers immersifs et raconter des histoires à travers la lumière et le mouvement.</p>
+            </div>
+            <div class="software-grid">
+                <div class="soft-item"><img src="https://cdn-icons-png.flaticon.com/512/2809/2809590.png" class="soft-icon"><span class="soft-name">Source Filmmaker</span></div>
+                <div class="soft-item"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e9/Cinema_4D_Logo.png" class="soft-icon"><span class="soft-name">Cinema 4D</span></div>
+                <div class="soft-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Blender_logo_no_text.svg/2503px-Blender_logo_no_text.svg.png" class="soft-icon"><span class="soft-name">Blender</span></div>
+                <div class="soft-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Autodesk_Maya_Logo_2023.svg/1024px-Autodesk_Maya_Logo_2023.svg.png" class="soft-icon"><span class="soft-name">Maya</span></div>
+                 <div class="soft-item"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Adobe_Substance_3D_Painter_logo.svg/1200px-Adobe_Substance_3D_Painter_logo.svg.png" class="soft-icon"><span class="soft-name">Substance</span></div>
+            </div>
+            <a onclick="scrollToSection('#contact')" class="cta-btn about-btn">
+                <span>Me contacter</span>
+                <div class="arrow">↓</div>
+            </a>
+        </section>
+
+        <section id="contact">
+            <div class="liquid-wrapper" id="tilt-card">
+                <div class="distortion-layer"></div>
+                <div class="glass-body-layer"></div>
+                <div class="liquid-content">
+                    <h2>Let's Create</h2>
+                    <p>Un projet en tête ? Une collaboration ?</p>
+                    <a href="mailto:contact@portfolio.com" class="email-link">hello@portfolio.com</a>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Instagram</a>
+                        <a href="#" class="social-link">Artstation</a>
+                        <a href="#" class="social-link">LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), direction: 'vertical', smooth: true });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+
+        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+        function scrollToSection(id) { gsap.to(window, { duration: 1.5, scrollTo: id, ease: "power3.inOut" }); }
+
+        const lightbox = document.getElementById('lightbox');
+        const lightboxContent = document.getElementById('lightbox-content');
+        const lightboxCaption = document.getElementById('lightbox-caption');
+
+        function openLightbox(card) {
+            const type = card.getAttribute('data-type');
+            const src = card.getAttribute('data-src');
+            const title = card.querySelector('h3').innerText;
+            lightboxContent.innerHTML = '';
+            lightboxCaption.innerText = title;
+            if (type === 'video') {
+                const video = document.createElement('video'); video.src = src; video.controls = true; video.autoplay = true; lightboxContent.appendChild(video);
+            } else {
+                const img = document.createElement('img'); img.src = src; lightboxContent.appendChild(img);
+            }
+            lightbox.style.display = 'flex';
+            gsap.to(lightbox, { opacity: 1, duration: 0.3 });
+            lenis.stop();
+        }
+        function closeLightbox() {
+            const activeVideo = lightboxContent.querySelector('video');
+            if (activeVideo) { activeVideo.pause(); activeVideo.src = ""; }
+            gsap.to(lightbox, { opacity: 0, duration: 0.3, onComplete: () => { lightbox.style.display = 'none'; lightboxContent.innerHTML = ''; } });
+            lenis.start();
+        }
+        lightboxContent.addEventListener('click', (e) => e.stopPropagation());
+
+        /* --- FONCTION DE FILTRE RÉPARÉE --- */
+        function filterProjects(category, btn) {
+            // 1. Gérer les boutons
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // 2. Gérer les cartes
+            const cards = document.querySelectorAll('.project-card');
+            cards.forEach(card => {
+                const cardCat = card.getAttribute('data-category');
+                
+                // Si tout est sélectionné ou si la catégorie correspond
+                if (category === 'all' || cardCat === category) {
+                    // On affiche (si c'était caché)
+                    if (card.style.display === 'none') {
+                        card.style.display = 'block'; // Remet dans le flux
+                        // Petit reset pour l'anim
+                        gsap.fromTo(card, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, clearProps: "all" });
+                    }
+                } else {
+                    // On cache
+                    gsap.to(card, { 
+                        opacity: 0, 
+                        scale: 0.9, 
+                        duration: 0.3, 
+                        onComplete: () => { 
+                            card.style.display = 'none'; // Retire du flux pour que la grille se referme
+                        } 
+                    });
+                }
+            });
+        }
+        
+        gsap.to(".soft-item", {
+            scrollTrigger: { trigger: "#about", start: "top 70%", toggleActions: "play none none reverse" },
+            y: 0, opacity: 1, duration: 0.8, stagger: 0.2, ease: "power2.out"
+        });
+
+        const card = document.getElementById('tilt-card');
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const rotateX = ((e.clientY - rect.top - rect.height/2) / (rect.height/2)) * -5;
+            const rotateY = ((e.clientX - rect.left - rect.width/2) / (rect.width/2)) * 5;
+            card.style.transform = `perspective(1000px) scale(1.08) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        card.addEventListener('mouseleave', () => { card.style.transform = `perspective(1000px) scale(1.05) rotateX(0) rotateY(0)`; });
+
+        gsap.to("#turbulence-noise", { attr: { baseFrequency: "0.001" }, duration: 15, repeat: -1, yoyo: true, ease: "sine.inOut" });
+
+        const floatingBtn = document.getElementById('floating-contact');
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const winH = window.innerHeight;
+            const docH = document.body.scrollHeight;
+            if (scrollY > winH * 0.5 && scrollY < docH - winH * 1.2) {
+                floatingBtn.style.opacity = '1'; floatingBtn.style.transform = 'translateY(0) scale(1)'; floatingBtn.style.pointerEvents = 'all';
+            } else {
+                floatingBtn.style.opacity = '0'; floatingBtn.style.transform = 'translateY(20px) scale(1)'; floatingBtn.style.pointerEvents = 'none';
+            }
+        });
+
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050505, 0.02);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio); 
+        document.getElementById('webgl-container').appendChild(renderer.domElement);
+
+        const particlesGeom = new THREE.BufferGeometry();
+        const posArray = new Float32Array(700 * 3);
+        for(let i = 0; i < 700 * 3; i++) { posArray[i] = (Math.random() - 0.5) * 60; }
+        particlesGeom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMat = new THREE.PointsMaterial({size: 0.05, color: 0xffffff, transparent: true, opacity: 0.5});
+        const particlesMesh = new THREE.Points(particlesGeom, particlesMat);
+        scene.add(particlesMesh);
+
+        let mainMesh;
+        mainMesh = new THREE.Group();
+        const outerMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(10, 1), new THREE.MeshBasicMaterial({ color: 0x444444, wireframe: true, transparent: true, opacity: 0.3 }));
+        const innerMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(6, 0), new THREE.MeshBasicMaterial({ color: 0x00ccff, wireframe: true, transparent: true, opacity: 0.1 }));
+        mainMesh.add(outerMesh);
+        mainMesh.add(innerMesh);
+        scene.add(mainMesh);
+        mainMesh.position.set(18, 0, -5); camera.position.z = 30;
+
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => { mouseX = (e.clientX/window.innerWidth)*2-1; mouseY = -(e.clientY/window.innerHeight)*2+1; });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particlesMesh.rotation.y += 0.001;
+            if(mainMesh) {
+                mainMesh.rotation.y += 0.002 + 0.05 * (mouseX - mainMesh.rotation.y * 0.1);
+                mainMesh.rotation.x += 0.05 * (mouseY - mainMesh.rotation.x * 0.1);
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('scroll', () => {
+            if(!mainMesh) return;
+            const scrollY = window.scrollY, winH = window.innerHeight;
+            if (scrollY < winH * 0.5) { gsap.to(mainMesh.position, { x: 18, y: 0, z: -5, duration: 1.5 }); gsap.to(mainMesh.scale, { x: 1, y: 1, z: 1, duration: 1.5 }); } 
+            else if (scrollY < winH * 1.5) { gsap.to(mainMesh.position, { x: -25, y: 0, z: -20, duration: 1.5 }); }
+            else if (scrollY < winH * 2.5) { gsap.to(mainMesh.position, { x: 25, y: -5, z: -10, duration: 1.5 }); gsap.to(mainMesh.scale, { x: 1, y: 1, z: 1, duration: 1.5 }); }
+            else { gsap.to(mainMesh.position, { x: 0, y: 0, z: -15, duration: 1.5 }); gsap.to(mainMesh.scale, { x: 2.5, y: 2.5, z: 2.5, duration: 1.5 }); }
+        });
+
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+    </script>
+</body>
+</html>
